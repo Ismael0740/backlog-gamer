@@ -1,8 +1,13 @@
 use sqlx::migrate::MigrateDatabase;
-
+use std::fs;
 use sqlx::{SqlitePool};
 
 pub async fn init(path: &str) -> SqlitePool {
+
+    if let Some(parent) = std::path::Path::new(path).parent() {
+        fs::create_dir_all(parent).unwrap();
+    }
+
     if !sqlx::Sqlite::database_exists(path).await.unwrap_or(false) {
         sqlx::Sqlite::create_database(path).await.unwrap();
     }
@@ -37,15 +42,15 @@ pub struct Game {
 }
 
 
-#[tauri::command]
-async fn delete_game(pool: tauri::State<'_, SqlitePool>, id: i64) -> Result<(), String> {
-    sqlx::query("DELETE FROM games WHERE id = ?")
-        .bind(id)
-        .execute(&*pool)
-        .await
-        .map_err(|e| e.to_string())?;
-    Ok(())
-}
+// #[tauri::command]
+// async fn delete_game(pool: tauri::State<'_, SqlitePool>, id: i64) -> Result<(), String> {
+//     sqlx::query("DELETE FROM games WHERE id = ?")
+//         .bind(id)
+//         .execute(&*pool)
+//         .await
+//         .map_err(|e| e.to_string())?;
+//     Ok(())
+// }
 
 
 pub async fn fetch_games(pool: &SqlitePool) -> Vec<Game> {

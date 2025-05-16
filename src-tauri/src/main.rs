@@ -3,6 +3,7 @@ mod db;
 use db::{Game, fetch_games};
 use sqlx::{SqlitePool};
 use tauri::Manager;
+use std::path::PathBuf;
 
 #[tauri::command]
 async fn add_game(pool: tauri::State<'_, SqlitePool>, title: String, platform: Option<String>) -> Result<(), String> {
@@ -31,11 +32,21 @@ async fn delete_game(pool: tauri::State<'_, SqlitePool>, id: i64) -> Result<(), 
 }
 
 fn main() {
+  let exe_path = std::env::current_exe().unwrap(); // ruta al binario
+  let project_dir = exe_path
+    .parent().unwrap()   // debug/
+    .parent().unwrap()   // target/
+    .parent().unwrap()   // src-tauri/
+    .parent().unwrap();  // ✅ backlog-gamer/
+  let db_path: PathBuf = project_dir.join("data").join("backlog.db");
+
   tauri::Builder::default()
-      .setup(|app| {
-          tauri::async_runtime::block_on(async {
-              let pool = crate::db::init("sqlite:backlog.db").await;
-              app.manage(pool); // ✅ Ya no se mueve entre hilos
+      .setup(move |app| {
+          let db_path = db_path.clone();
+          tauri::async_runtime::block_on(async move {
+              let db_path_str = db_path.to_str().unwrap();
+              let pool = crate::db::init(db_path_str).await;
+              app.manage(pool);
           });
           Ok(())
       })

@@ -1,13 +1,18 @@
-import { useState } from "react";
-import { addGame } from "../lib/api";
+// frontend/src/components/AddGameForm.tsx
 
-export function AddGameForm() {
+import { useState } from "react";
+
+type Props = {
+  create: (title: string, platform?: string) => Promise<void>;
+};
+
+export function AddGameForm({ create }: Props) {
   const [title, setTitle] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!title.trim()) return;
-    await addGame(title);
+    await create(title); // ✅ usa el prop
     setTitle("");
   }
 
@@ -19,10 +24,7 @@ export function AddGameForm() {
         placeholder="Título del juego"
         className="border rounded px-2 py-1 flex-1"
       />
-      <button
-        type="submit"
-        className="bg-blue-600 text-white rounded px-3 py-1"
-      >
+      <button type="submit" className="bg-blue-600 text-white rounded px-3 py-1">
         Añadir
       </button>
     </form>

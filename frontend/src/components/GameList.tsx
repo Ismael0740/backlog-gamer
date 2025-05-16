@@ -1,8 +1,11 @@
-import { useGames } from "../hooks/useGames";
+import type { Game } from "../lib/api";
 
-export function GameList() {
-  const { games, remove } = useGames();
+type Props = {
+  games: Game[];
+  remove: (id: number) => Promise<void>;
+};
 
+export function GameList({ games, remove }: Props) {
   if (!games.length) return <p className="italic">Sin juegos aún…</p>;
 
   return (
